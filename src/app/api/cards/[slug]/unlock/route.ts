@@ -34,7 +34,12 @@ export async function POST(
 
   return NextResponse.json({
     message: card.message,
-    media: media ?? [],
+    media: (media ?? []).map((item) => ({
+      id: item.id,
+      storagePath: item.storage_path,
+      mediaType: item.media_type,
+      position: item.position,
+    })),
     timeline: card.timeline ?? [],
     reasons: card.reasons ?? [],
     loveLetter: card.love_letter,
