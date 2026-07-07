@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Birthday Card
 
-## Getting Started
+Create a personalized, unlockable birthday card: names, a message, photos/videos,
+background music, a PIN-protected reveal, and a wall of wishes from guests.
 
-First, run the development server:
+Built with Next.js (App Router, TypeScript, Tailwind) and Supabase (Postgres +
+Storage), deployed on Vercel.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Project structure
+
+```
+src/app/create/*      Six-step card creation flow (names, message, photos, music, wishes, review)
+src/app/c/[slug]/*     Public card page guests open (PIN gate -> reveal)
+src/app/api/cards/*    API routes: fetch public card info, verify PIN + return content
+src/components/create  Creation-flow UI (step nav, dropzone, footer)
+src/components/card    Guest-facing card UI (unlock gate, confetti, gallery)
+src/lib/supabase       Browser / server / admin (service-role) Supabase clients
+src/lib/pin.ts         PIN hashing/verification (bcrypt)
+supabase/schema.sql    Database tables + RLS policies
+supabase/storage.sql   Storage bucket for uploaded media
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Create a [Supabase](https://supabase.com) project.
+3. In the Supabase SQL editor, run `supabase/schema.sql` then `supabase/storage.sql`.
+4. Copy the env template and fill in your Supabase project's API keys (Project
+   Settings -> API):
+   ```bash
+   cp .env.local.example .env.local
+   ```
+5. Start the dev server:
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deploying
 
-## Learn More
+1. Push this repo to GitHub (already done if you're reading this from the repo).
+2. Import the repo into [Vercel](https://vercel.com/new).
+3. Add the same environment variables from `.env.local` in the Vercel project
+   settings (Production + Preview).
+4. Set `NEXT_PUBLIC_SITE_URL` to your production domain so shareable card
+   links are generated correctly.
 
-To learn more about Next.js, take a look at the following resources:
+## Status
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This is the initial scaffold: routing, Supabase clients, database schema, and
+UI stubs are in place. Still to build: wiring the creation flow to actually
+save a card + upload media to Supabase Storage, generating/copying the share
+link on the Review step, and the wishes submission form on the public card
+page.
