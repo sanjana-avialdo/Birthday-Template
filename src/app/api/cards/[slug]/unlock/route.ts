@@ -12,7 +12,7 @@ export async function POST(
 
   const { data: card, error } = await supabase
     .from("cards")
-    .select("id, message, pin_hash")
+    .select("id, message, pin_hash, timeline, reasons, love_letter, final_message")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -32,5 +32,12 @@ export async function POST(
     .eq("card_id", card.id)
     .order("position", { ascending: true });
 
-  return NextResponse.json({ message: card.message, media: media ?? [] });
+  return NextResponse.json({
+    message: card.message,
+    media: media ?? [],
+    timeline: card.timeline ?? [],
+    reasons: card.reasons ?? [],
+    loveLetter: card.love_letter,
+    finalMessage: card.final_message,
+  });
 }

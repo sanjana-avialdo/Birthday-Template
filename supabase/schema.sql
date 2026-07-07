@@ -13,6 +13,10 @@ create table if not exists cards (
   music_url text,
   pin_hash text,
   pin_hint text,
+  timeline jsonb not null default '[]',
+  reasons jsonb not null default '[]',
+  love_letter text,
+  final_message text,
   created_at timestamptz not null default now()
 );
 

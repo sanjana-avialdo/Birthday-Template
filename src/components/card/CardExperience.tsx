@@ -1,7 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ConfettiBurst } from "./ConfettiBurst";
+import { PinScreen } from "./PinScreen";
+import { LoadingHeart } from "./LoadingHeart";
+import { HeroReveal } from "./HeroReveal";
+import { BirthdayWish } from "./BirthdayWish";
+import { MemoriesTimeline } from "./MemoriesTimeline";
+import { VideoGallery } from "./VideoGallery";
+import { PhotoGallery } from "./PhotoGallery";
+import { ReasonsList } from "./ReasonsList";
+import { CakeCutting } from "./CakeCutting";
+import { LoveLetter } from "./LoveLetter";
+import { FinalMessage } from "./FinalMessage";
+import { FireworksFinale } from "./FireworksFinale";
+import { DEMO_CARD } from "@/lib/demo-card";
+import type { TimelineEntry } from "@/lib/types";
 
 interface PublicCard {
   recipientName: string;
@@ -11,29 +24,65 @@ interface PublicCard {
   locked: boolean;
 }
 
-interface UnlockedContent {
-  message: string | null;
-  media: { id: string; storagePath: string; mediaType: "image" | "video" }[];
+interface MediaItem {
+  id: string;
+  storagePath: string;
+  mediaType: "image" | "video";
+  poster?: string;
 }
 
+interface UnlockedContent {
+  message: string | null;
+  media: MediaItem[];
+  timeline: TimelineEntry[];
+  reasons: string[];
+  loveLetter: string | null;
+  finalMessage: string | null;
+}
+
+type Stage = "locked" | "loading" | "revealed";
+
 export function CardExperience({ slug }: { slug: string }) {
-  const [card, setCard] = useState<PublicCard | null>(null);
+  const isDemo = slug === "demo";
+
+  const [card, setCard] = useState<PublicCard | null>(isDemo ? DEMO_CARD : null);
   const [unlocked, setUnlocked] = useState<UnlockedContent | null>(null);
-  const [pin, setPin] = useState("");
+  const [stage, setStage] = useState<Stage>("locked");
+  const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    if (isDemo) return;
+
     fetch(`/api/cards/${slug}`)
       .then((res) => (res.ok ? res.json() : Promise.reject(res)))
       .then(setCard)
-      .catch(() => setError("This card could not be found."));
-  }, [slug]);
+      .catch(() => setNotFound(true));
+  }, [slug, isDemo]);
 
-  async function handleUnlock(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleUnlock(pin: string) {
     setSubmitting(true);
     setError(null);
+
+    if (isDemo) {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      setSubmitting(false);
+      if (pin !== DEMO_CARD.pin) {
+        setError("That PIN didn't work — try again.");
+        return;
+      }
+      setUnlocked({
+        message: DEMO_CARD.message,
+        media: DEMO_CARD.media,
+        timeline: DEMO_CARD.timeline,
+        reasons: DEMO_CARD.reasons,
+        loveLetter: DEMO_CARD.loveLetter,
+        finalMessage: DEMO_CARD.finalMessage,
+      });
+      setStage("loading");
+      return;
+    }
 
     const res = await fetch(`/api/cards/${slug}/unlock`, {
       method: "POST",
@@ -49,71 +98,68 @@ export function CardExperience({ slug }: { slug: string }) {
     }
 
     setUnlocked(await res.json());
+    setStage("loading");
   }
 
-  if (error && !card) {
-    return <p className="text-foreground/70">{error}</p>;
-  }
-
-  if (!card) {
-    return <p className="text-foreground/70">Loading card…</p>;
-  }
-
-  if (!unlocked) {
+  if (notFound) {
     return (
-      <form onSubmit={handleUnlock} className="flex flex-col items-center gap-4 text-center">
-        <h1 className="text-3xl font-semibold">A card for {card.recipientName}</h1>
-        <p className="text-foreground/70">From {card.senderName}</p>
-
-        {card.locked && (
-          <>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={pin}
-              onChange={(e) => setPin(e.target.value)}
-              placeholder="Enter PIN"
-              className="rounded-lg border border-black/10 px-3 py-2 text-center dark:border-white/15"
-            />
-            {card.pinHint && <p className="text-xs text-foreground/50">Hint: {card.pinHint}</p>}
-          </>
-        )}
-
-        {error && <p className="text-sm text-red-500">{error}</p>}
-
-        <button
-          type="submit"
-          disabled={submitting}
-          className="rounded-full bg-foreground px-6 py-2 text-sm font-medium text-background disabled:opacity-50"
-        >
-          {submitting ? "Opening…" : "Open"}
-        </button>
-      </form>
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-foreground/70">This card could not be found.</p>
+      </div>
     );
   }
 
+  if (!card) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-foreground/70">Loading card…</p>
+      </div>
+    );
+  }
+
+  if (!card.locked && stage === "locked") {
+    setStage("loading");
+  }
+
+  if (stage === "locked") {
+    return (
+      <PinScreen
+        hint={card.pinHint}
+        submitting={submitting}
+        error={error}
+        onSubmit={handleUnlock}
+      />
+    );
+  }
+
+  if (stage === "loading") {
+    return <LoadingHeart onDone={() => setStage("revealed")} />;
+  }
+
+  const message = unlocked?.message ?? null;
+  const media = unlocked?.media ?? [];
+  const photos = media.filter((item) => item.mediaType === "image");
+  const videos = media.filter((item) => item.mediaType === "video");
+  const timeline = unlocked?.timeline ?? [];
+  const reasons = unlocked?.reasons ?? [];
+  const loveLetter = unlocked?.loveLetter ?? null;
+  const finalMessage = unlocked?.finalMessage ?? null;
+
   return (
-    <div className="flex flex-col items-center gap-6 text-center">
-      <ConfettiBurst />
-      <h1 className="text-3xl font-semibold">Happy birthday, {card.recipientName}!</h1>
-      {unlocked.message && <p className="max-w-prose whitespace-pre-wrap text-foreground/80">{unlocked.message}</p>}
-
-      {unlocked.media.length > 0 && (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {unlocked.media.map((item) => (
-            <li key={item.id} className="aspect-square overflow-hidden rounded-lg bg-black/5 dark:bg-white/5">
-              {item.mediaType === "video" ? (
-                <video src={item.storagePath} className="h-full w-full object-cover" controls />
-              ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={item.storagePath} alt="" className="h-full w-full object-cover" />
-              )}
-            </li>
-          ))}
-        </ul>
+    <div>
+      <HeroReveal recipientName={card.recipientName} message={null} />
+      {message && <BirthdayWish message={message} />}
+      <MemoriesTimeline entries={timeline} />
+      <VideoGallery videos={videos} />
+      <PhotoGallery photos={photos} />
+      <ReasonsList reasons={reasons} />
+      <CakeCutting />
+      {loveLetter && <LoveLetter letter={loveLetter} />}
+      {finalMessage && <FinalMessage message={finalMessage} />}
+      <FireworksFinale recipientName={card.recipientName} />
+      {card.musicUrl && (
+        <audio src={card.musicUrl} autoPlay loop className="fixed bottom-4 right-4" controls />
       )}
-
-      {card.musicUrl && <audio src={card.musicUrl} autoPlay loop controls />}
     </div>
   );
 }

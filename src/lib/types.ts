@@ -1,5 +1,11 @@
 export type CardTheme = "aurora-sky" | "midnight-rose";
 
+export interface TimelineEntry {
+  date: string;
+  title: string;
+  description: string;
+}
+
 export interface Card {
   id: string;
   slug: string;
@@ -9,6 +15,10 @@ export interface Card {
   theme: CardTheme;
   musicUrl: string | null;
   pinHint: string | null;
+  timeline: TimelineEntry[];
+  reasons: string[];
+  loveLetter: string | null;
+  finalMessage: string | null;
   createdAt: string;
 }
 
