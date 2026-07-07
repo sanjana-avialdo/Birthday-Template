@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Stray build caches left behind by a stuck local dev process.
+    "build-output/**",
+    "webapp-build/**",
+    ".next-stale-*/**",
   ]),
 ]);
 

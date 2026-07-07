@@ -17,6 +17,11 @@
 /.next/
 /out/
 
+# stray build caches left behind by a stuck local dev process
+/build-output/
+/webapp-build/
+/.next-stale-*/
+
 # production
 /build
 
