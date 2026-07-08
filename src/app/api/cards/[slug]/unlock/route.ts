@@ -28,7 +28,7 @@ export async function POST(
 
   const { data: media } = await supabase
     .from("card_media")
-    .select("id, storage_path, media_type, position")
+    .select("id, storage_path, media_type, position, caption")
     .eq("card_id", card.id)
     .order("position", { ascending: true });
 
@@ -39,6 +39,7 @@ export async function POST(
       storagePath: item.storage_path,
       mediaType: item.media_type,
       position: item.position,
+      caption: item.caption,
     })),
     timeline: card.timeline ?? [],
     reasons: card.reasons ?? [],

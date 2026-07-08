@@ -29,6 +29,7 @@ interface MediaItem {
   storagePath: string;
   mediaType: "image" | "video";
   poster?: string;
+  caption?: string | null;
 }
 
 interface UnlockedContent {

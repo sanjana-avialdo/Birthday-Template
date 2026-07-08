@@ -8,12 +8,42 @@ export const DEMO_CARD = {
   message:
     "It's been an amazing year knowing you. Here's to more laughter, more memories, and more birthdays together.",
   media: [
-    { id: "p1", storagePath: "https://picsum.photos/seed/bday-photo-1/500", mediaType: "image" as const },
-    { id: "p2", storagePath: "https://picsum.photos/seed/bday-photo-2/500", mediaType: "image" as const },
-    { id: "p3", storagePath: "https://picsum.photos/seed/bday-photo-3/500", mediaType: "image" as const },
-    { id: "p4", storagePath: "https://picsum.photos/seed/bday-photo-4/500", mediaType: "image" as const },
-    { id: "p5", storagePath: "https://picsum.photos/seed/bday-photo-5/500", mediaType: "image" as const },
-    { id: "p6", storagePath: "https://picsum.photos/seed/bday-photo-6/500", mediaType: "image" as const },
+    {
+      id: "p1",
+      storagePath: "https://picsum.photos/seed/bday-photo-1/500",
+      mediaType: "image" as const,
+      caption: "The day we met",
+    },
+    {
+      id: "p2",
+      storagePath: "https://picsum.photos/seed/bday-photo-2/500",
+      mediaType: "image" as const,
+      caption: "That road trip",
+    },
+    {
+      id: "p3",
+      storagePath: "https://picsum.photos/seed/bday-photo-3/500",
+      mediaType: "image" as const,
+      caption: "Your birthday last year",
+    },
+    {
+      id: "p4",
+      storagePath: "https://picsum.photos/seed/bday-photo-4/500",
+      mediaType: "image" as const,
+      caption: "",
+    },
+    {
+      id: "p5",
+      storagePath: "https://picsum.photos/seed/bday-photo-5/500",
+      mediaType: "image" as const,
+      caption: "Late night talks",
+    },
+    {
+      id: "p6",
+      storagePath: "https://picsum.photos/seed/bday-photo-6/500",
+      mediaType: "image" as const,
+      caption: "",
+    },
     {
       id: "v1",
       storagePath: "",

@@ -28,6 +28,7 @@ export interface CardMedia {
   storagePath: string;
   mediaType: "image" | "video";
   position: number;
+  caption: string | null;
 }
 
 export interface Wish {

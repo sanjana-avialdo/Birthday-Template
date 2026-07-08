@@ -22,7 +22,10 @@ export default function ReviewStepPage() {
     body.set("musicUrl", form.musicUrl);
     body.set("pin", form.pin);
     body.set("pinHint", form.pinHint);
-    form.media.forEach(({ file }) => body.append("media", file));
+    form.media.forEach(({ file, caption }) => {
+      body.append("media", file);
+      body.append("caption", caption);
+    });
 
     try {
       const res = await fetch("/api/cards", { method: "POST", body });

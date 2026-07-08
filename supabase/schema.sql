@@ -27,8 +27,12 @@ create table if not exists card_media (
   storage_path text not null,
   media_type text not null check (media_type in ('image', 'video')),
   position int not null default 0,
+  caption text,
   created_at timestamptz not null default now()
 );
+
+-- Safe to re-run on an existing database that predates the caption column.
+alter table card_media add column if not exists caption text;
 
 -- Wishes left by guests on a card.
 create table if not exists wishes (

@@ -15,6 +15,7 @@ export async function POST(request: Request) {
   const pin = String(formData.get("pin") ?? "").trim();
   const pinHint = String(formData.get("pinHint") ?? "").trim();
   const files = formData.getAll("media").filter((item): item is File => item instanceof File);
+  const captions = formData.getAll("caption").map((item) => String(item));
 
   if (!recipientName || !senderName) {
     return NextResponse.json({ error: "Recipient and sender name are required" }, { status: 400 });
@@ -79,6 +80,7 @@ export async function POST(request: Request) {
       storage_path: publicUrl.publicUrl,
       media_type: mediaType,
       position: i,
+      caption: captions[i]?.trim() || null,
     });
 
     if (mediaInsertError) console.error("Failed to insert card_media row:", mediaInsertError);

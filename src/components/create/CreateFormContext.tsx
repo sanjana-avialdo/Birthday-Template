@@ -5,6 +5,7 @@ import { createContext, useContext, useState } from "react";
 export interface PickedMedia {
   file: File;
   previewUrl: string;
+  caption: string;
 }
 
 export interface CreateFormState {
@@ -22,6 +23,7 @@ interface CreateFormContextValue {
   update: (patch: Partial<CreateFormState>) => void;
   addMedia: (files: File[]) => void;
   removeMedia: (previewUrl: string) => void;
+  updateMediaCaption: (previewUrl: string, caption: string) => void;
 }
 
 const initialState: CreateFormState = {
@@ -46,7 +48,10 @@ export function CreateFormProvider({ children }: { children: React.ReactNode }) 
   function addMedia(files: File[]) {
     setForm((current) => ({
       ...current,
-      media: [...current.media, ...files.map((file) => ({ file, previewUrl: URL.createObjectURL(file) }))],
+      media: [
+        ...current.media,
+        ...files.map((file) => ({ file, previewUrl: URL.createObjectURL(file), caption: "" })),
+      ],
     }));
   }
 
@@ -57,8 +62,15 @@ export function CreateFormProvider({ children }: { children: React.ReactNode }) 
     }));
   }
 
+  function updateMediaCaption(previewUrl: string, caption: string) {
+    setForm((current) => ({
+      ...current,
+      media: current.media.map((item) => (item.previewUrl === previewUrl ? { ...item, caption } : item)),
+    }));
+  }
+
   return (
-    <CreateFormContext.Provider value={{ form, update, addMedia, removeMedia }}>
+    <CreateFormContext.Provider value={{ form, update, addMedia, removeMedia, updateMediaCaption }}>
       {children}
     </CreateFormContext.Provider>
   );
