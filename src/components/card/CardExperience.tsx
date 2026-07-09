@@ -6,8 +6,7 @@ import { LoadingHeart } from "./LoadingHeart";
 import { HeroReveal } from "./HeroReveal";
 import { BirthdayWish } from "./BirthdayWish";
 import { MemoriesTimeline } from "./MemoriesTimeline";
-import { VideoGallery } from "./VideoGallery";
-import { PhotoGallery } from "./PhotoGallery";
+import { MemoriesGallery } from "./MemoriesGallery";
 import { ReasonsList } from "./ReasonsList";
 import { CakeCutting } from "./CakeCutting";
 import { LoveLetter } from "./LoveLetter";
@@ -139,8 +138,6 @@ export function CardExperience({ slug }: { slug: string }) {
 
   const message = unlocked?.message ?? null;
   const media = unlocked?.media ?? [];
-  const photos = media.filter((item) => item.mediaType === "image");
-  const videos = media.filter((item) => item.mediaType === "video");
   const timeline = unlocked?.timeline ?? [];
   const reasons = unlocked?.reasons ?? [];
   const loveLetter = unlocked?.loveLetter ?? null;
@@ -151,8 +148,7 @@ export function CardExperience({ slug }: { slug: string }) {
       <HeroReveal recipientName={card.recipientName} message={null} />
       {message && <BirthdayWish message={message} />}
       <MemoriesTimeline entries={timeline} />
-      <VideoGallery videos={videos} />
-      <PhotoGallery photos={photos} />
+      <MemoriesGallery media={media} />
       <ReasonsList reasons={reasons} />
       <CakeCutting />
       {loveLetter && <LoveLetter letter={loveLetter} />}

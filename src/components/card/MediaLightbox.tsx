@@ -3,34 +3,35 @@
 import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-interface PhotoItem {
+interface MediaLightboxItem {
   id: string;
   storagePath: string;
+  mediaType: "image" | "video";
   caption?: string | null;
 }
 
-interface PhotoLightboxProps {
-  photos: PhotoItem[];
+interface MediaLightboxProps {
+  items: MediaLightboxItem[];
   index: number;
   onClose: () => void;
   onNavigate: (index: number) => void;
 }
 
-export function PhotoLightbox({ photos, index, onClose, onNavigate }: PhotoLightboxProps) {
-  const photo = photos[index];
+export function MediaLightbox({ items, index, onClose, onNavigate }: MediaLightboxProps) {
+  const item = items[index];
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
-      if (e.key === "ArrowRight") onNavigate((index + 1) % photos.length);
-      if (e.key === "ArrowLeft") onNavigate((index - 1 + photos.length) % photos.length);
+      if (e.key === "ArrowRight") onNavigate((index + 1) % items.length);
+      if (e.key === "ArrowLeft") onNavigate((index - 1 + items.length) % items.length);
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [index, photos.length, onClose, onNavigate]);
+  }, [index, items.length, onClose, onNavigate]);
 
-  if (!photo) return null;
+  if (!item) return null;
 
   return (
     <AnimatePresence>
@@ -50,16 +51,16 @@ export function PhotoLightbox({ photos, index, onClose, onNavigate }: PhotoLight
           ✕
         </button>
 
-        {photos.length > 1 && (
+        {items.length > 1 && (
           <>
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                onNavigate((index - 1 + photos.length) % photos.length);
+                onNavigate((index - 1 + items.length) % items.length);
               }}
               className="absolute left-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-xl text-white hover:bg-white/20 sm:left-6"
-              aria-label="Previous photo"
+              aria-label="Previous"
             >
               ‹
             </button>
@@ -67,10 +68,10 @@ export function PhotoLightbox({ photos, index, onClose, onNavigate }: PhotoLight
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                onNavigate((index + 1) % photos.length);
+                onNavigate((index + 1) % items.length);
               }}
               className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-xl text-white hover:bg-white/20 sm:right-6"
-              aria-label="Next photo"
+              aria-label="Next"
             >
               ›
             </button>
@@ -78,25 +79,34 @@ export function PhotoLightbox({ photos, index, onClose, onNavigate }: PhotoLight
         )}
 
         <motion.div
-          key={photo.id}
+          key={item.id}
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.2 }}
           className="flex max-h-full max-w-full flex-col items-center gap-3"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={photo.storagePath}
-            alt={photo.caption ?? ""}
-            className="max-h-[75vh] max-w-full rounded-lg object-contain"
-          />
-          {photo.caption && (
-            <p className="max-w-lg text-center text-sm text-white/80">{photo.caption}</p>
+          {item.mediaType === "video" ? (
+            <video
+              src={item.storagePath}
+              controls
+              autoPlay
+              className="max-h-[75vh] max-w-full rounded-lg"
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.storagePath}
+              alt={item.caption ?? ""}
+              className="max-h-[75vh] max-w-full rounded-lg object-contain"
+            />
           )}
-          {photos.length > 1 && (
+          {item.caption && (
+            <p className="max-w-lg text-center text-sm text-white/80">{item.caption}</p>
+          )}
+          {items.length > 1 && (
             <p className="text-xs text-white/40">
-              {index + 1} / {photos.length}
+              {index + 1} / {items.length}
             </p>
           )}
         </motion.div>

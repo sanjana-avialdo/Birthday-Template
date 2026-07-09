@@ -11,7 +11,7 @@ export function MemoriesTimeline({ entries }: { entries: TimelineEntry[] }) {
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-12">
         <div className="flex flex-col items-center gap-2 text-center">
           <span className="text-3xl">🕰️</span>
-          <h2 className="font-baloo text-3xl font-semibold">Our Memories</h2>
+          <h2 className="font-baloo text-3xl font-semibold">Our Story</h2>
         </div>
 
         <ol className="relative flex w-full flex-col gap-10 border-l border-white/15 pl-8">
