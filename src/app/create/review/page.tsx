@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useCreateForm } from "@/components/create/CreateFormContext";
+import { createClient } from "@/lib/supabase/client";
 
 export default function ReviewStepPage() {
   const { form } = useCreateForm();
   const [publishing, setPublishing] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
 
@@ -15,33 +17,77 @@ export default function ReviewStepPage() {
     setPublishing(true);
     setError(null);
 
-    const body = new FormData();
-    body.set("recipientName", form.recipientName);
-    body.set("senderName", form.senderName);
-    body.set("message", form.message);
-    body.set("musicUrl", form.musicUrl);
-    body.set("pin", form.pin);
-    body.set("pinHint", form.pinHint);
-    form.media.forEach(({ file, caption }) => {
-      body.append("media", file);
-      body.append("caption", caption);
-    });
-
     try {
-      const res = await fetch("/api/cards", { method: "POST", body });
-      const data = await res.json();
+      setProgress("Creating your card…");
+      const cardRes = await fetch("/api/cards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipientName: form.recipientName,
+          senderName: form.senderName,
+          message: form.message,
+          musicUrl: form.musicUrl,
+          pin: form.pin,
+          pinHint: form.pinHint,
+        }),
+      });
+      const cardData = await cardRes.json();
 
-      if (!res.ok) {
-        setError(data.error ?? "Something went wrong publishing this card.");
+      if (!cardRes.ok) {
+        setError(cardData.error ?? "Something went wrong publishing this card.");
         return;
       }
 
+      const { id: cardId, slug } = cardData;
+      const supabase = createClient();
+
+      for (let i = 0; i < form.media.length; i++) {
+        const { file, caption } = form.media[i];
+        setProgress(`Uploading photo/video ${i + 1} of ${form.media.length}…`);
+
+        const urlRes = await fetch(`/api/media/${cardId}/upload-url`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename: file.name, position: i }),
+        });
+        const urlData = await urlRes.json();
+
+        if (!urlRes.ok) {
+          console.error("Failed to prepare upload for", file.name, urlData.error);
+          continue;
+        }
+
+        const { error: uploadError } = await supabase.storage
+          .from("card-media")
+          .uploadToSignedUrl(urlData.path, urlData.token, file, { contentType: file.type });
+
+        if (uploadError) {
+          console.error("Failed to upload", file.name, uploadError);
+          continue;
+        }
+
+        const { data: publicUrl } = supabase.storage.from("card-media").getPublicUrl(urlData.path);
+
+        await fetch(`/api/media/${cardId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            storagePath: publicUrl.publicUrl,
+            mediaType: file.type.startsWith("video") ? "video" : "image",
+            position: i,
+            caption,
+          }),
+        });
+      }
+
       const site = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin;
-      setShareUrl(`${site}/c/${data.slug}`);
-    } catch {
+      setShareUrl(`${site}/c/${slug}`);
+    } catch (err) {
+      console.error(err);
       setError("Something went wrong publishing this card.");
     } finally {
       setPublishing(false);
+      setProgress(null);
     }
   }
 
@@ -98,6 +144,7 @@ export default function ReviewStepPage() {
         </div>
       </dl>
 
+      {progress && <p className="text-sm text-foreground/60">{progress}</p>}
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       <div className="mt-4 flex items-center justify-between border-t border-black/10 pt-6 dark:border-white/15">
